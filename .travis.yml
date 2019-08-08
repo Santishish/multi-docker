@@ -1,0 +1,21 @@
+language: generic
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t santishish/react-test -f ./client/dev.Dockerfile ./client
+
+script:
+  - docker run -e CI=true santishish/react-test npm test
+
+after_success:
+  - docker build -t santishish/multi-client ./client
+  - docker build -t santishish/multi-nginx ./nginx
+  - docker built -t santishish/multi-server ./server
+  - docker build -t santishish/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push santishish/multi-client
+  - docker push santishish/multi-nginx
+  - docker push santishish/multi-server
+  - docker push santishish/multi-worker
